@@ -12,14 +12,17 @@ under `app/`, your **licensed** copy of the application.
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
 │   ├── nginx.conf php.ini opcache.ini supervisord.conf
 ├── docker-compose.yml      app + queue + scheduler + mysql + redis
+├── docker-compose.dokploy.yml   same stack, tuned for Dokploy (Traefik, env-injected)
 ├── .env.docker.example
+├── .env.dokploy.example
 ├── Makefile
 ├── .github/workflows/ci.yml
 └── docs/
     ├── ANALYSE-CODE.md     code / stack analysis
     ├── CLEANUP.md          what was trimmed from the stock package
     ├── REBRAND.md          Stackposts → Queuebo changes
-    └── DEPLOYMENT.md       full deployment guide
+    ├── DEPLOYMENT.md       full deployment guide
+    └── DOKPLOY.md          deploy on Dokploy (Compose service)
 ```
 
 ## Licensing — read first
@@ -38,14 +41,19 @@ cp .env.docker.example .env.docker      # edit APP_URL, DB_PASSWORD, ...
 # 2. run
 docker compose --env-file .env.docker up -d --build
 #    or: make up
-
-# 3. install
-open http://localhost:8080/installer
 ```
 
-In the wizard use DB host `mysql`, port `3306`, database/user `queuebo`,
-password = `DB_PASSWORD`, and your Envato **purchase code** (verified against
-`stackposts.com`, so the host needs outbound HTTPS).
+With `AUTO_INSTALL=true` (the default in `.env.docker`) the app provisions
+itself against the pre-configured database on first boot — `php artisan
+queuebo:install` runs the migrations, seeders and the admin user from the
+`ADMIN_*` vars, then serves the login page. A blank `ADMIN_PASSWORD` is
+generated and printed to the container log (`docker compose logs app`).
+
+To use the step-by-step web wizard instead, set `AUTO_INSTALL=false` and
+open `http://localhost:8085/installer`: DB host `mysql`, port `3306`,
+database/user `queuebo`, password = `DB_PASSWORD`. It also asks for an
+Envato **purchase code** (verified against `stackposts.com`, needs outbound
+HTTPS) unless `INSTALLER_PURCHASE_CODE_REQUIRED=false`.
 
 ## Services
 
@@ -69,4 +77,7 @@ Persistent volumes: `mysql`, `redis`, `storage` (the app's `storage/`).
 - Routes are **not** cached (closure routes in `routes/web.php`); config,
   views and events are.
 
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the long form.
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the long form, or
+[`docs/DOKPLOY.md`](docs/DOKPLOY.md) to deploy on **Dokploy** — one Compose
+service, Traefik-terminated TLS, all config from the Environment tab
+(`docker-compose.dokploy.yml` + `.env.dokploy.example`).

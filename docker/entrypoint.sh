@@ -69,7 +69,12 @@ fi
 if [ "$ROLE" = "app" ]; then
     # Pin HTTP_HOST / scheme for FastCGI from APP_URL, so Laravel builds
     # correct absolute URLs even if a proxy rewrites the Host header.
-    APP_URL_VALUE="$(sed -nE 's/^APP_URL=["'"'"']?([^"'"'"']+)["'"'"']?/\1/p' .env | head -n1)"
+    # Prefer an injected APP_URL (docker-compose environment / Dokploy) over
+    # whatever the seeded .env happens to carry.
+    APP_URL_VALUE="${APP_URL:-}"
+    if [ -z "$APP_URL_VALUE" ]; then
+        APP_URL_VALUE="$(sed -nE 's/^APP_URL=["'"'"']?([^"'"'"']+)["'"'"']?/\1/p' .env | head -n1)"
+    fi
     APP_URL_VALUE="${APP_URL_VALUE:-http://localhost}"
     APP_HOSTPORT="${APP_URL_VALUE#*://}"; APP_HOSTPORT="${APP_HOSTPORT%%/*}"
     {
@@ -84,12 +89,20 @@ if [ "$ROLE" = "app" ]; then
     } > /etc/nginx/app_host.conf
     log "nginx HTTP_HOST pinned to ${APP_HOSTPORT}"
 
-    if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
+    # An injected APP_KEY (compose environment / Dokploy) wins at runtime;
+    # only self-generate when neither the environment nor .env supplies one.
+    if [ -z "${APP_KEY:-}" ] && ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
         log "generating APP_KEY"
         $ARTISAN key:generate --force
     fi
 
-    if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+    if [ "${AUTO_INSTALL:-false}" = "true" ]; then
+        # Headless provisioning against the pre-configured database: migrations,
+        # seeders and the administrator user, no web wizard / purchase code.
+        # Idempotent — skips itself once the app is installed.
+        log "headless install (queuebo:install)"
+        $ARTISAN queuebo:install --no-interaction
+    elif [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
         log "running migrations"
         $ARTISAN migrate --force
     fi

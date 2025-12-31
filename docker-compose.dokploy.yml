@@ -1,0 +1,188 @@
+# Queuebo — Dokploy deployment (Compose service type).
+#
+#   Dokploy › Project › Create Service › Compose
+#     Provider ......... this Git repository
+#     Compose Path ..... ./docker-compose.dokploy.yml
+#   Paste .env.dokploy.example into the Environment tab, set APP_DOMAIN,
+#   APP_KEY, DB_PASSWORD, DB_ROOT_PASSWORD, then Deploy.
+#
+# How this differs from docker-compose.yml (local/dev):
+#   * no published host ports — Dokploy's bundled Traefik reaches the app
+#     over the shared external "dokploy-network"
+#   * no ./.env.docker bind mount — every value is injected from the Dokploy
+#     Environment tab and passed through the `environment:` maps below
+#   * Traefik labels on the app service do TLS termination + routing
+#   * mysql / redis are internal only (no forwarded ports)
+#
+# Laravel reads real environment variables with precedence over the .env
+# file (Dotenv immutable mode), so the container's seeded .env only supplies
+# fallbacks — the values here win.
+
+name: queuebo
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+    args:
+      PHP_VERSION: "8.3"
+      RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
+  image: queuebo:dokploy
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_started
+  volumes:
+    - storage:/var/www/html/storage
+
+# Shared application config — injected from the Dokploy Environment tab.
+x-app-env: &app-env
+  # --- core ---
+  APP_NAME: "${APP_NAME:-Queuebo}"
+  APP_ENV: "${APP_ENV:-production}"
+  APP_KEY: "${APP_KEY:?set APP_KEY in the Dokploy Environment tab — generate with: php artisan key:generate --show}"
+  APP_DEBUG: "${APP_DEBUG:-false}"
+  APP_URL: "https://${APP_DOMAIN:?set APP_DOMAIN in the Dokploy Environment tab}"
+  APP_TIMEZONE: "${APP_TIMEZONE:-UTC}"
+  APP_LOCALE: "${APP_LOCALE:-en}"
+  APP_FALLBACK_LOCALE: "${APP_FALLBACK_LOCALE:-en}"
+  LOG_CHANNEL: "${LOG_CHANNEL:-stack}"
+  LOG_STACK: "${LOG_STACK:-single}"
+  LOG_LEVEL: "${LOG_LEVEL:-error}"
+  # --- database (compose service "mysql") ---
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: "${DB_DATABASE:-queuebo}"
+  DB_USERNAME: "${DB_USERNAME:-queuebo}"
+  DB_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in the Dokploy Environment tab}"
+  # --- redis (compose service "redis") ---
+  REDIS_CLIENT: phpredis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: "${REDIS_PASSWORD:-null}"
+  # --- queue / cache / session ---
+  QUEUE_CONNECTION: "${QUEUE_CONNECTION:-database}"
+  CACHE_STORE: "${CACHE_STORE:-database}"
+  SESSION_DRIVER: "${SESSION_DRIVER:-database}"
+  SESSION_LIFETIME: "${SESSION_LIFETIME:-120}"
+  SESSION_ENCRYPT: "${SESSION_ENCRYPT:-false}"
+  SESSION_SECURE_COOKIE: "${SESSION_SECURE_COOKIE:-true}"
+  SESSION_COOKIE: "${SESSION_COOKIE:-queuebo_session}"
+  BROADCAST_CONNECTION: "${BROADCAST_CONNECTION:-log}"
+  FILESYSTEM_DISK: "${FILESYSTEM_DISK:-local}"
+  # --- mail ---
+  MAIL_MAILER: "${MAIL_MAILER:-log}"
+  MAIL_HOST: "${MAIL_HOST:-127.0.0.1}"
+  MAIL_PORT: "${MAIL_PORT:-2525}"
+  MAIL_USERNAME: "${MAIL_USERNAME:-null}"
+  MAIL_PASSWORD: "${MAIL_PASSWORD:-null}"
+  MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-hello@example.com}"
+  MAIL_FROM_NAME: "${APP_NAME:-Queuebo}"
+  # --- S3 media storage (optional) ---
+  AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-}"
+  AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-}"
+  AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-us-east-1}"
+  AWS_BUCKET: "${AWS_BUCKET:-}"
+  AWS_USE_PATH_STYLE_ENDPOINT: "${AWS_USE_PATH_STYLE_ENDPOINT:-false}"
+  # --- entrypoint behaviour ---
+  WAIT_FOR_DB: "true"
+  AUTO_INSTALL: "${AUTO_INSTALL:-true}"
+  INSTALLER_PURCHASE_CODE_REQUIRED: "${INSTALLER_PURCHASE_CODE_REQUIRED:-false}"
+  RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
+  OPTIMIZE: "${OPTIMIZE:-true}"
+  ADMIN_NAME: "${ADMIN_NAME:-Administrator}"
+  ADMIN_EMAIL: "${ADMIN_EMAIL:-admin@example.com}"
+  ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+  ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+  SITE_DESCRIPTION: "${SITE_DESCRIPTION:-}"
+  SITE_KEYWORDS: "${SITE_KEYWORDS:-}"
+
+services:
+  app:
+    <<: *app
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: app
+    networks:
+      - default
+      - dokploy-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.queuebo-web.rule=Host(`${APP_DOMAIN}`)"
+      - traefik.http.routers.queuebo-web.entrypoints=web
+      - traefik.http.routers.queuebo-web.middlewares=queuebo-https-redirect
+      - traefik.http.middlewares.queuebo-https-redirect.redirectscheme.scheme=https
+      # HTTPS + Let's Encrypt
+      - "traefik.http.routers.queuebo-websecure.rule=Host(`${APP_DOMAIN}`)"
+      - traefik.http.routers.queuebo-websecure.entrypoints=websecure
+      - traefik.http.routers.queuebo-websecure.tls=true
+      - traefik.http.routers.queuebo-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.queuebo.loadbalancer.server.port=80
+
+  queue:
+    <<: *app
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: queue
+      WAIT_FOR_INSTALL: "${WAIT_FOR_INSTALL:-true}"
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'queue:work' >/dev/null || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  scheduler:
+    <<: *app
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: scheduler
+      WAIT_FOR_INSTALL: "${WAIT_FOR_INSTALL:-true}"
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-queuebo}"
+      MYSQL_USER: "${DB_USERNAME:-queuebo}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in the Dokploy Environment tab}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in the Dokploy Environment tab}"
+    volumes:
+      - mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis:/data
+
+networks:
+  dokploy-network:
+    external: true
+
+volumes:
+  storage:
+  mysql:
+  redis:

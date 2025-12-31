@@ -10,6 +10,8 @@ README.md
 LICENSE
 .env
 .env.docker
+.env.dokploy
+docker-compose*.yml
 
 # Everything under ./app that must not enter the image -------------
 app/.git
