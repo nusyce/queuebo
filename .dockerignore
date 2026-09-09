@@ -1,0 +1,47 @@
+# Build context = repository root. Only ./app and ./docker feed the image.
+
+.git
+.github
+.gitignore
+docs
+Makefile
+README.md
+*.md
+LICENSE
+.env
+.env.docker
+
+# Everything under ./app that must not enter the image -------------
+app/.git
+app/.github
+app/node_modules
+app/.env
+app/.env.*
+app/auth.json
+app/npm-debug.log
+app/yarn-error.log
+app/.phpunit.cache
+app/.phpunit.result.cache
+app/.phpactor.json
+app/storage/logs/*.log
+app/storage/framework/cache/data/*
+app/storage/framework/sessions/*
+app/storage/framework/views/*.php
+app/bootstrap/cache/*.php
+app/public/hot
+app/tests
+app/.idea
+app/.vscode
+app/.fleet
+app/.nova
+app/.zed
+
+# CodeCanyon packaging cruft
+app/Install.zip
+app/Documentation.html
+app/Download More PHP Scripts.html
+*.rar
+*.zip
+
+# NOTE: app/vendor and app/public/build are intentionally kept — they ship
+# prebuilt in the CodeCanyon package and the runtime needs them.

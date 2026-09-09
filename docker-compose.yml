@@ -1,0 +1,101 @@
+# Stackposts v10 — self-hosted stack (monorepo).
+#
+#   cp .env.docker.example .env.docker      # then edit
+#   docker compose --env-file .env.docker up -d --build
+#
+# One image (built from ./app + ./docker) backs the web, queue and scheduler
+# services; they differ only by CONTAINER_ROLE.
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+    args:
+      PHP_VERSION: "8.3"
+      # "true" to build from an ./app tree that has no vendor/
+      RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
+  image: stackposts:10
+  env_file: .env.docker
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_started
+  volumes:
+    - storage:/var/www/html/storage
+    # Live-edit source during development (image still provides vendor/):
+    # - ./app:/var/www/html
+
+services:
+  app:
+    <<: *app
+    environment:
+      CONTAINER_ROLE: app
+      # Leave "false" for a first install — the web wizard at /installer runs
+      # the migrations. Set "true" when pointing at an installed database.
+      RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
+      OPTIMIZE: "${OPTIMIZE:-false}"
+    ports:
+      - "${APP_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  queue:
+    <<: *app
+    environment:
+      CONTAINER_ROLE: queue
+    depends_on:
+      - app
+    ports: []
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'queue:work' >/dev/null || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  scheduler:
+    <<: *app
+    environment:
+      CONTAINER_ROLE: scheduler
+    depends_on:
+      - app
+    ports: []
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-stackposts}"
+      MYSQL_USER: "${DB_USERNAME:-stackposts}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-rootsecret}"
+    volumes:
+      - mysql:/var/lib/mysql
+    ports:
+      - "${DB_FORWARD_PORT:-33061}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-rootsecret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis:/data
+    ports:
+      - "${REDIS_FORWARD_PORT:-63791}:6379"
+
+volumes:
+  storage:
+  mysql:
+  redis:

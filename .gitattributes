@@ -1,0 +1,14 @@
+# Normalise line endings — containers run these on Linux.
+* text=auto eol=lf
+
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+*.ini           text eol=lf
+Makefile        text eol=lf
+*.yml           text eol=lf
+*.yaml           text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.woff2 binary

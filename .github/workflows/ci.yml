@@ -1,0 +1,44 @@
+name: docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard — application source present
+        run: |
+          if [ ! -f app/artisan ] || [ ! -f app/composer.json ]; then
+            echo "::error::app/ does not contain a Stackposts source tree (app/artisan missing)."
+            echo "Place your licensed CodeCanyon copy in app/ — see README.md."
+            exit 1
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          load: true
+          tags: stackposts:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Boot smoke test
+        run: |
+          docker run -d --name sp -e WAIT_FOR_DB=false -e RUN_MIGRATIONS=false \
+            -e OPTIMIZE=false -p 8080:80 stackposts:ci
+          for i in $(seq 1 30); do
+            code=$(docker exec sp curl -s -o /dev/null -w '%{http_code}' http://localhost/up || true)
+            [ "$code" = "200" ] && echo "healthy" && exit 0
+            sleep 2
+          done
+          echo "::error::/up never returned 200"; docker logs sp; exit 1

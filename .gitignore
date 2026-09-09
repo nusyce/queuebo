@@ -1,0 +1,50 @@
+# ── Secrets — never commit ──────────────────────────────────────────
+/.env
+/.env.docker
+/.env.*.local
+/app/.env
+/app/.env.backup
+/app/.env.production
+/app/auth.json
+/app/storage/*.key
+/app/storage/oauth-*.key
+
+# ── Local runtime state ────────────────────────────────────────────
+/app/node_modules
+/app/public/hot
+/app/public/storage
+/app/storage/pail
+/app/storage/logs/*.log
+/app/storage/framework/cache/data/*
+/app/storage/framework/sessions/*
+/app/storage/framework/views/*.php
+/app/bootstrap/cache/*.php
+/app/.phpunit.cache
+/app/.phpunit.result.cache
+
+# keep the tree structure
+!/app/storage/framework/cache/data/.gitignore
+!/app/storage/framework/sessions/.gitignore
+!/app/storage/framework/views/.gitignore
+
+# ── Editor / OS ──────────────────────────────────────────────────
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+.DS_Store
+Thumbs.db
+
+# ── CodeCanyon packaging cruft (do not commit) ─────────────────
+/app/Install.zip
+/app/Documentation.html
+/app/Download More PHP Scripts.html
+/app/NullPHPscript.com.html
+*.rar
+
+# ── Decide per project ─────────────────────────────────────────────
+# vendor/ and public/build/ ship prebuilt in the CodeCanyon package.
+# Commit them for a self-contained deploy repo, or ignore and rebuild in CI.
+# /app/vendor
+# /app/public/build
