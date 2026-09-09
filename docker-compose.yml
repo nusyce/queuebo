@@ -15,22 +15,35 @@ x-app: &app
       # "true" to build from an ./app tree that has no vendor/
       RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
   image: stackposts:10
-  env_file: .env.docker
   restart: unless-stopped
   depends_on:
     mysql:
       condition: service_healthy
     redis:
       condition: service_started
+  # .env.docker IS the container's .env — a single source of truth that the
+  # web installer can persist to (APP_INSTALLED, licence, etc.).
   volumes:
     - storage:/var/www/html/storage
+    - ./.env.docker:/var/www/html/.env
     # Live-edit source during development (image still provides vendor/):
     # - ./app:/var/www/html
+
+# Vars the entrypoint needs before .env is read, and which the installer
+# never rewrites. Everything else comes from the mounted .env.
+x-env: &infra-env
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: "${DB_DATABASE:-stackposts}"
+  DB_USERNAME: "${DB_USERNAME:-stackposts}"
+  DB_PASSWORD: "${DB_PASSWORD:-secret}"
+  WAIT_FOR_DB: "${WAIT_FOR_DB:-true}"
 
 services:
   app:
     <<: *app
     environment:
+      <<: *infra-env
       CONTAINER_ROLE: app
       # Leave "false" for a first install — the web wizard at /installer runs
       # the migrations. Set "true" when pointing at an installed database.
@@ -48,7 +61,9 @@ services:
   queue:
     <<: *app
     environment:
+      <<: *infra-env
       CONTAINER_ROLE: queue
+      WAIT_FOR_INSTALL: "${WAIT_FOR_INSTALL:-true}"
     depends_on:
       - app
     ports: []
@@ -62,7 +77,9 @@ services:
   scheduler:
     <<: *app
     environment:
+      <<: *infra-env
       CONTAINER_ROLE: scheduler
+      WAIT_FOR_INSTALL: "${WAIT_FOR_INSTALL:-true}"
     depends_on:
       - app
     ports: []

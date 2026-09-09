@@ -46,6 +46,25 @@ if [ "${WAIT_FOR_DB:-true}" = "true" ]; then
     '
 fi
 
+# --- Workers wait until the app schema exists ------------------------
+# queue:work / schedule:work hit the database (database queue + cache stores)
+# on the first tick. Before Stackposts is installed there are no tables, so
+# hold here until the installer (or `migrate`) has created them.
+if [ "$ROLE" = "queue" ] || [ "$ROLE" = "scheduler" ]; then
+    if [ "${WAIT_FOR_INSTALL:-true}" = "true" ]; then
+        log "waiting for the Stackposts schema (run the installer if this hangs)"
+        until php -r '
+            try {
+                $p = new PDO(
+                    "mysql:host=".(getenv("DB_HOST")?:"mysql").";port=".(getenv("DB_PORT")?:"3306").";dbname=".(getenv("DB_DATABASE")?:"stackposts"),
+                    getenv("DB_USERNAME")?:"stackposts", getenv("DB_PASSWORD")?:"", [PDO::ATTR_TIMEOUT=>2]);
+                exit($p->query("SHOW TABLES LIKE \"migrations\"")->fetch() ? 0 : 1);
+            } catch (Throwable $e) { exit(1); }
+        '; do sleep 5; done
+        log "schema present — continuing"
+    fi
+fi
+
 # --- One-time app prep — only the app role does this ------------------
 if [ "$ROLE" = "app" ]; then
     if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
