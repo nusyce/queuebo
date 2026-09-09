@@ -67,6 +67,23 @@ fi
 
 # --- One-time app prep — only the app role does this ------------------
 if [ "$ROLE" = "app" ]; then
+    # Pin HTTP_HOST / scheme for FastCGI from APP_URL, so Laravel builds
+    # correct absolute URLs even if a proxy rewrites the Host header.
+    APP_URL_VALUE="$(sed -nE 's/^APP_URL=["'"'"']?([^"'"'"']+)["'"'"']?/\1/p' .env | head -n1)"
+    APP_URL_VALUE="${APP_URL_VALUE:-http://localhost}"
+    APP_HOSTPORT="${APP_URL_VALUE#*://}"; APP_HOSTPORT="${APP_HOSTPORT%%/*}"
+    {
+        printf 'fastcgi_param HTTP_HOST "%s";\n' "$APP_HOSTPORT"
+        printf 'fastcgi_param SERVER_NAME "%s";\n' "${APP_HOSTPORT%%:*}"
+        case "$APP_HOSTPORT" in
+            *:*) printf 'fastcgi_param SERVER_PORT "%s";\n' "${APP_HOSTPORT##*:}" ;;
+        esac
+        case "$APP_URL_VALUE" in
+            https://*) printf 'fastcgi_param HTTPS "on";\n' ;;
+        esac
+    } > /etc/nginx/app_host.conf
+    log "nginx HTTP_HOST pinned to ${APP_HOSTPORT}"
+
     if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
         log "generating APP_KEY"
         $ARTISAN key:generate --force
