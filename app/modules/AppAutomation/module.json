@@ -1,0 +1,11 @@
+{
+    "name": "AppAutomation",
+    "alias": "appautomation",
+    "description": "Automation API, inbound publishing endpoints, and outbound webhooks for Zapier, n8n, and custom workflows.",
+    "keywords": ["automation", "api", "webhooks", "zapier", "n8n"],
+    "priority": 0,
+    "providers": [
+        "Modules\\AppAutomation\\Providers\\AppAutomationServiceProvider"
+    ],
+    "files": []
+}

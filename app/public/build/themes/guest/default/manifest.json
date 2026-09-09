@@ -1,0 +1,23 @@
+{
+  "resources/themes/guest/default/assets/js/app.js": {
+    "file": "assets/app-Csaetgn9.js",
+    "name": "app",
+    "src": "resources/themes/guest/default/assets/js/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-CZM5C9MB.css"
+    ]
+  },
+  "resources/themes/shared/js/highcharts.js": {
+    "file": "assets/highcharts-7Pq9Jzz5.js",
+    "name": "highcharts",
+    "src": "resources/themes/shared/js/highcharts.js",
+    "isEntry": true
+  },
+  "resources/themes/shared/js/image-editor.js": {
+    "file": "assets/image-editor-CK0DTOpq.js",
+    "name": "image-editor",
+    "src": "resources/themes/shared/js/image-editor.js",
+    "isEntry": true
+  }
+}

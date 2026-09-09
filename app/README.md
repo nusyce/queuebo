@@ -1,39 +1,26 @@
 # `app/` — Stackposts application source
 
-**This directory is intentionally empty in version control.** Place the
-Stackposts v10 application here — the contents of `Install.zip` from **your
-own CodeCanyon / Envato purchase** (item `21747459`).
+Stackposts v10 (CodeCanyon item `21747459`), Laravel 13 / Livewire 4 / PHP 8.3.
+The tree is committed with `vendor/` and `public/build/` included so the image
+builds with no Composer/npm step.
 
-After copying, `app/` must contain at least:
-
-```
-app/artisan
-app/composer.json
-app/public/index.php
-app/app/  app/modules/  app/config/  app/routes/  app/vendor/  ...
-```
-
-## Populate it
-
-```bash
-# from your licensed download
-unzip /path/to/Install.zip -d app/
-
-# sanity check
-test -f app/artisan && test -f app/composer.json && echo OK
-```
-
-Then from the repo root:
-
-```bash
-cp .env.docker.example .env.docker   # edit it
-docker compose --env-file .env.docker up -d --build
-# open http://localhost:8080/installer
-```
+What was changed relative to the stock `Install.zip` is listed in
+[`../docs/CLEANUP.md`](../docs/CLEANUP.md) — dev artefacts, local runtime state
+and VCS hygiene only; no application logic touched.
 
 ## Notes
 
-- Use a copy from your own CodeCanyon / Envato purchase.
-- Do not commit `app/.env`, `app/auth.json`, `app/storage/*.key` or
-  `app/Install.zip` — `.gitignore` already blocks them.
+- Use a copy from your own CodeCanyon / Envato purchase; diff it against
+  `docs/CLEANUP.md` to confirm the delta.
+- Real config is supplied at runtime via `../.env.docker` — `app/.env` is not
+  committed (`.gitignore`).
 - Keep this repository **private** (Envato commercial licence).
+
+## Refreshing to a new Stackposts release
+
+```bash
+rm -rf app                       # keep this README + docs/CLEANUP.md handy
+unzip Install.zip -d app/
+# re-apply the CLEANUP.md steps, then:
+git add app && git commit -m "vendor: Stackposts vX.Y"
+```

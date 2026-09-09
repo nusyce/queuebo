@@ -6,7 +6,7 @@ under `app/`, your **licensed** copy of the application.
 
 ```
 .
-├── app/                    ← your licensed Stackposts source (see app/README.md)
+├── app/                    ← Stackposts source, vendor/ + build/ included (docs/CLEANUP.md)
 ├── docker/
 │   ├── Dockerfile          php 8.3-fpm + nginx + supervisor, one image
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
@@ -22,24 +22,21 @@ under `app/`, your **licensed** copy of the application.
 
 ## Licensing — read first
 
-Stackposts is sold under the **Envato commercial licence**. Keep this repo
-**private** and fill `app/` from your own CodeCanyon / Envato download. The
-container files here contain no Stackposts source.
+Stackposts is sold under the **Envato commercial licence**. Keep this
+repository **private**. `app/` holds the application source (see
+`docs/CLEANUP.md` for what was changed vs. the stock package).
 
 ## Quick start
 
 ```bash
-# 1. put your licensed copy in app/  (see app/README.md)
-unzip /path/to/Install.zip -d app/
-
-# 2. configure
+# 1. configure
 cp .env.docker.example .env.docker      # edit APP_URL, DB_PASSWORD, ...
 
-# 3. run
+# 2. run
 docker compose --env-file .env.docker up -d --build
 #    or: make up
 
-# 4. install
+# 3. install
 open http://localhost:8080/installer
 ```
 

@@ -12,3 +12,7 @@ Makefile        text eol=lf
 *.png  binary
 *.jpg  binary
 *.woff2 binary
+
+# Leave vendored dependencies exactly as shipped — no EOL normalisation.
+app/vendor/**        -text
+app/public/build/**  -text

@@ -59,7 +59,7 @@ if [ "$ROLE" = "app" ]; then
     fi
 
     log "linking public storage"
-    $ARTISAN storage:link || true
+    $ARTISAN storage:link --force || true
 
     if [ "${OPTIMIZE:-false}" = "true" ]; then
         log "caching config / views / events"

@@ -16,7 +16,10 @@ app/.git
 app/.github
 app/node_modules
 app/.env
-app/.env.*
+app/.env.backup
+app/.env.production
+app/.env.*.local
+# keep app/.env.example — the entrypoint seeds .env from it
 app/auth.json
 app/npm-debug.log
 app/yarn-error.log
