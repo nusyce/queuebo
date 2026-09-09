@@ -22,10 +22,9 @@ under `app/`, your **licensed** copy of the application.
 
 ## Licensing — read first
 
-Stackposts is sold under the **Envato commercial licence**. This repo must
-stay **private**, `app/` must be filled from **your own Envato download**, and
-a *nulled/cracked* build must never be used (licence violation + a common
-malware vector). The container files here contain no Stackposts source.
+Stackposts is sold under the **Envato commercial licence**. Keep this repo
+**private** and fill `app/` from your own CodeCanyon / Envato download. The
+container files here contain no Stackposts source.
 
 ## Quick start
 

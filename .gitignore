@@ -39,8 +39,6 @@ Thumbs.db
 # ── CodeCanyon packaging cruft (do not commit) ─────────────────
 /app/Install.zip
 /app/Documentation.html
-/app/Download More PHP Scripts.html
-/app/NullPHPscript.com.html
 *.rar
 
 # ── Decide per project ─────────────────────────────────────────────

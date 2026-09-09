@@ -7,8 +7,7 @@ obtained from your own Envato account.
 
 > **Licensing:** Stackposts is sold under the Envato commercial licence. Keep
 > the application source in a **private** repository tied to your deployment,
-> and never redistribute it. Do not use a "nulled" build — besides the licence
-> violation, those are a common malware vector.
+> and use a copy from your own CodeCanyon / Envato purchase.
 
 ---
 

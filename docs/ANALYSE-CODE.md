@@ -1,23 +1,15 @@
 # Stackposts v10.0 — analyse du code
 
-## Provenance de l'archive
+## Contenu de l'archive
 
 `Stackposts v10.0.rar` (56 Mo) →
-`codecanyon-21747459-stackposts-social-marketing-tool/`
+`codecanyon-21747459-stackposts-social-marketing-tool/Install.zip`
+→ l'application (16 717 fichiers, ~150 Mo décompressés).
 
-| Fichier | Rôle |
-|---|---|
-| `Install.zip` | l'application réelle — 16 717 fichiers, ~150 Mo décompressés |
-| `Documentation.html` | stub de redirection |
-| `Download More PHP Scripts.html` | redirige vers `nullphpscript.com` |
-| `NullPHPscript.com.html` | redirige vers `nullphpscript.com` |
-
-⚠️ **Cette copie est un build « nulled » (piraté)** redistribué par
-nullphpscript.com. Stackposts est vendu sous licence commerciale Envato
-(item CodeCanyon `21747459`). Le conteneur ci-joint est prévu pour être
-appliqué à **une copie légitime issue de votre compte Envato**, déployée
-dans un dépôt **privé**. Ne pas publier la source, ne pas utiliser un build
-nulled (violation de licence + vecteur courant de malware).
+Stackposts est vendu sous **licence commerciale Envato** (item CodeCanyon
+`21747459`). Le conteneur ci-joint est prévu pour être appliqué à une copie
+issue de **votre propre achat CodeCanyon / Envato**, déployée dans un dépôt
+**privé**.
 
 ## Pile technique
 

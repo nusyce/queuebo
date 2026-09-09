@@ -39,7 +39,6 @@ app/.zed
 # CodeCanyon packaging cruft
 app/Install.zip
 app/Documentation.html
-app/Download More PHP Scripts.html
 *.rar
 *.zip
 

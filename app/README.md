@@ -31,11 +31,9 @@ docker compose --env-file .env.docker up -d --build
 # open http://localhost:8080/installer
 ```
 
-## Do not
+## Notes
 
-- Do not commit a "nulled" / cracked build. It violates the Envato licence
-  and those packages routinely carry injected backdoors.
-- Do not commit `app/.env`, `app/auth.json`, `app/storage/*.key`,
-  `app/Install.zip` or the `NullPHPscript.com.html` / `Download More PHP
-  Scripts.html` marker files — `.gitignore` already blocks them.
-- Keep this repository **private**.
+- Use a copy from your own CodeCanyon / Envato purchase.
+- Do not commit `app/.env`, `app/auth.json`, `app/storage/*.key` or
+  `app/Install.zip` — `.gitignore` already blocks them.
+- Keep this repository **private** (Envato commercial licence).
