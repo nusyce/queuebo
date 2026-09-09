@@ -155,7 +155,7 @@ const baseChartOptions = ({ type = 'line', categories = [], series = [], legend 
     return config;
 };
 
-window.StackpostsHighcharts = {
+window.QueueboHighcharts = {
     lib: Highcharts,
     defaults() {
         return defaultTheme();
@@ -199,4 +199,4 @@ window.StackpostsHighcharts = {
     },
 };
 
-window.dispatchEvent(new CustomEvent('stackposts:highcharts-ready'));
+window.dispatchEvent(new CustomEvent('queuebo:highcharts-ready'));

@@ -183,7 +183,7 @@ class IyzicoPaymentGateway implements PaymentGateway
             'identityNumber' => str_pad((string) max(1, $checkout->userId), 11, '1', STR_PAD_LEFT),
             'registrationDate' => now()->toIso8601String(),
             'lastLoginDate' => now()->toIso8601String(),
-            'registrationAddress' => 'Stackposts user account',
+            'registrationAddress' => 'Queuebo user account',
             'city' => 'Istanbul',
             'country' => 'Turkey',
             'zipCode' => '34000',
@@ -194,7 +194,7 @@ class IyzicoPaymentGateway implements PaymentGateway
     protected function address(?User $user, PaymentCheckout $checkout, string $type): array
     {
         $label = $type === 'shipping' ? __('Shipping') : __('Billing');
-        $address = trim((string) ($user?->address ?: $user?->location ?: __('Stackposts customer')));
+        $address = trim((string) ($user?->address ?: $user?->location ?: __('Queuebo customer')));
 
         return [
             'contactName' => trim((string) ($user?->name ?: $user?->username ?: __('Customer'))),

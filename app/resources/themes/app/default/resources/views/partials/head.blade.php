@@ -380,13 +380,13 @@
 <script src="{{ theme_shared_asset('plugins/highcharts/highcharts.js') }}"></script>
 <script>
     (() => {
-        if (window.StackpostsHighcharts || !window.Highcharts) {
+        if (window.QueueboHighcharts || !window.Highcharts) {
             return;
         }
 
         const cssVar = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 
-        window.StackpostsHighcharts = {
+        window.QueueboHighcharts = {
             lib: window.Highcharts,
             render: (elOrId, options = {}) => {
                 const element = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
@@ -428,7 +428,7 @@
             },
         };
 
-        window.dispatchEvent(new CustomEvent('stackposts:highcharts-ready'));
+        window.dispatchEvent(new CustomEvent('queuebo:highcharts-ready'));
     })();
 </script>
 

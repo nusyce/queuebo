@@ -114,7 +114,7 @@
     <x-ui.page-hero
         :eyebrow="__('Marketplace')"
         :title="$product['name']"
-        :description="$product['description'] ?: __('Marketplace product detail loaded from Stackposts API.')"
+        :description="$product['description'] ?: __('Marketplace product detail loaded from the marketplace API.')"
         icon="fa-light fa-store"
     >
         <x-slot:actions>

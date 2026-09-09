@@ -73,7 +73,7 @@ class PayTRPaymentGateway implements PaymentGateway
             'debug_on' => (string) ($this->live ? 0 : 1),
             'lang' => $this->language(),
             'user_name' => trim((string) ($user?->name ?: $user?->username ?: __('Customer'))),
-            'user_address' => trim((string) ($user?->address ?: $user?->location ?: __('Stackposts customer'))),
+            'user_address' => trim((string) ($user?->address ?: $user?->location ?: __('Queuebo customer'))),
             'user_phone' => trim((string) ($user?->phone ?: '+905555555555')),
             'merchant_ok_url' => route('payment.success', ['gateway' => 'paytr']),
             'merchant_fail_url' => route('payment.cancel', ['gateway' => 'paytr']),

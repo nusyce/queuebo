@@ -45,7 +45,7 @@
             <div class="min-w-0">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.24em]" style="color: var(--theme-accent);">{{ __('Automation') }}</p>
                 <h1 class="mt-2 text-[1.65rem] font-semibold tracking-[-0.05em] sm:text-[1.85rem]" style="color: var(--theme-header-text-color);">{{ __('Automation Hub') }}</h1>
-                <p class="mt-3 max-w-3xl text-sm leading-7" style="color: var(--theme-muted-text-color);">{{ __('Connect Stackposts with Zapier, n8n, Make, or custom scripts through API keys, inbound publishing endpoints, and outbound post-status webhooks.') }}</p>
+                <p class="mt-3 max-w-3xl text-sm leading-7" style="color: var(--theme-muted-text-color);">{{ __('Connect Queuebo with Zapier, n8n, Make, or custom scripts through API keys, inbound publishing endpoints, and outbound post-status webhooks.') }}</p>
             </div>
             <div class="min-w-0 max-w-full rounded-[1rem] border px-4 py-3 text-sm" style="border-color: rgba(var(--theme-border-color-rgb), 0.68); background-color: rgba(var(--theme-surface-base-rgb,255,255,255),0.92); color: var(--theme-header-text-color);">
                 <div class="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -83,7 +83,7 @@
                     <p class="mt-3 font-mono text-sm break-all">{{ $revealedApiKey }}</p>
                 </div>
                 <p class="text-sm leading-7" style="color: var(--theme-muted-text-color);">
-                    {{ __('Use this token in n8n with `Authorization: Bearer ...` or `X-Stackposts-Key`. Once you close this popup, the full key cannot be shown again.') }}
+                    {{ __('Use this token in n8n with `Authorization: Bearer ...` or `X-Queuebo-Key`. Once you close this popup, the full key cannot be shown again.') }}
                 </p>
             </div>
 
@@ -108,7 +108,7 @@
             <x-ui.card class="min-w-0 max-w-full overflow-hidden p-0">
                 <div class="border-b px-5 py-5 sm:px-8" style="border-color: rgba(var(--theme-border-color-rgb), 0.68);">
                     <p class="text-lg font-semibold" style="color: var(--theme-header-text-color);">{{ __('API keys') }}</p>
-                    <p class="mt-1 text-sm" style="color: var(--theme-muted-text-color);">{{ __('Use these keys in `Authorization: Bearer ...` or `X-Stackposts-Key` when creating posts from automation tools.') }}</p>
+                    <p class="mt-1 text-sm" style="color: var(--theme-muted-text-color);">{{ __('Use these keys in `Authorization: Bearer ...` or `X-Queuebo-Key` when creating posts from automation tools.') }}</p>
                 </div>
                 <div class="min-w-0 max-w-full space-y-5 px-5 py-5 sm:px-8 sm:py-6">
                     <form wire:submit="createApiKey" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -194,7 +194,7 @@
                                 </div>
                             </div>
                         @empty
-                            <x-ui.empty icon="fa-light fa-webhook" :title="__('No webhooks yet')" :description="__('Add a webhook endpoint to receive publishing status events outside Stackposts.')" />
+                            <x-ui.empty icon="fa-light fa-webhook" :title="__('No webhooks yet')" :description="__('Add a webhook endpoint to receive publishing status events outside Queuebo.')" />
                         @endforelse
                     </div>
                 </div>
@@ -252,7 +252,7 @@ Content-Type: application/json
       "youtube_title": "Automation Hub walkthrough",
       "youtube_category": "22",
       "youtube_privacy": "public",
-      "youtube_tags": "automation,stackposts,api",
+      "youtube_tags": "automation,queuebo,api",
       "youtube_thumbnail": "https://example.com/thumbnail.jpg"
     },
     "pinterest": {
@@ -267,7 +267,7 @@ Content-Type: application/json
       "mastodon_spoiler_text": ""
     },
     "discord": {
-      "discord_username": "Stackposts Bot",
+      "discord_username": "Queuebo Bot",
       "discord_avatar_url": "https://example.com/avatar.png"
     },
     "tiktok": {
@@ -293,7 +293,7 @@ Content-Type: application/json
                     </div>
                     <div>
                         <p class="font-semibold" style="color: var(--theme-header-text-color);">{{ __('3. Verify outbound signature') }}</p>
-                        <p>{{ __('Outgoing webhook requests include `X-Stackposts-Event`, `X-Stackposts-Timestamp`, and `X-Stackposts-Signature` where signature = `sha256=` + HMAC-SHA256(timestamp + "." + raw_body, signing_secret).') }}</p>
+                        <p>{{ __('Outgoing webhook requests include `X-Queuebo-Event`, `X-Queuebo-Timestamp`, and `X-Queuebo-Signature` where signature = `sha256=` + HMAC-SHA256(timestamp + "." + raw_body, signing_secret).') }}</p>
                     </div>
                 </div>
             </x-ui.card>

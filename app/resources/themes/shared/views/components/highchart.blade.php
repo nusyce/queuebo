@@ -24,7 +24,7 @@
             layoutTickCount: 0,
             lastLayoutWidth: 0,
             registerBridge() {
-                window.StackpostsHighcharts = {
+                window.QueueboHighcharts = {
                     lib: window.Highcharts,
                     render: (elOrId, options = {}) => {
                         const element = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
@@ -37,7 +37,7 @@
                     },
                 };
 
-                return window.StackpostsHighcharts;
+                return window.QueueboHighcharts;
             },
             mixColor(hex, ratio, target = '#ffffff') {
                 const normalize = (value) => {
@@ -342,7 +342,7 @@
                 }, options), theme);
             },
             ensureLibrary() {
-                if (window.StackpostsHighcharts) {
+                if (window.QueueboHighcharts) {
                     return Promise.resolve(this.registerBridge());
                 }
 
@@ -350,11 +350,11 @@
                     return Promise.resolve(this.registerBridge());
                 }
 
-                if (window.__stackpostsHighchartsLoader) {
-                    return window.__stackpostsHighchartsLoader;
+                if (window.__queueboHighchartsLoader) {
+                    return window.__queueboHighchartsLoader;
                 }
 
-                window.__stackpostsHighchartsLoader = new Promise((resolve, reject) => {
+                window.__queueboHighchartsLoader = new Promise((resolve, reject) => {
                     const bootstrap = () => {
                         if (!window.Highcharts) {
                             reject(new Error('Highcharts library failed to load.'));
@@ -363,11 +363,11 @@
 
                         this.registerBridge();
 
-                        window.dispatchEvent(new CustomEvent('stackposts:highcharts-ready'));
-                        resolve(window.StackpostsHighcharts);
+                        window.dispatchEvent(new CustomEvent('queuebo:highcharts-ready'));
+                        resolve(window.QueueboHighcharts);
                     };
 
-                    const existingScript = document.querySelector('script[data-stackposts-highcharts-cdn]');
+                    const existingScript = document.querySelector('script[data-queuebo-highcharts-cdn]');
 
                     if (existingScript) {
                         existingScript.addEventListener('load', bootstrap, { once: true });
@@ -378,13 +378,13 @@
                     const script = document.createElement('script');
                     script.src = @js($fallbackScriptUrl);
                     script.async = true;
-                    script.dataset.stackpostsHighchartsCdn = 'local';
+                    script.dataset.queueboHighchartsCdn = 'local';
                     script.addEventListener('load', bootstrap, { once: true });
                     script.addEventListener('error', () => reject(new Error('Failed to load local Highcharts script.')), { once: true });
                     document.head.appendChild(script);
                 });
 
-                return window.__stackpostsHighchartsLoader;
+                return window.__queueboHighchartsLoader;
             },
             render() {
                 if (!this.$refs?.chart || !this.$root?.isConnected) {
@@ -397,16 +397,16 @@
                             return;
                         }
 
-                        if (this.$refs.chart.__stackpostsChart?.destroy) {
-                            this.$refs.chart.__stackpostsChart.destroy();
+                        if (this.$refs.chart.__queueboChart?.destroy) {
+                            this.$refs.chart.__queueboChart.destroy();
                         }
 
-                        this.$refs.chart.__stackpostsChart = window.StackpostsHighcharts.render(this.$refs.chart, this.options);
+                        this.$refs.chart.__queueboChart = window.QueueboHighcharts.render(this.$refs.chart, this.options);
                         this.error = '';
                     })
                     .catch((error) => {
                         this.error = error?.message || 'Chart render failed.';
-                        console.error('Stackposts chart render failed', error);
+                        console.error('Queuebo chart render failed', error);
                     });
             },
             reflow() {
@@ -423,7 +423,7 @@
                         return;
                     }
 
-                    const chart = this.$refs.chart.__stackpostsChart;
+                    const chart = this.$refs.chart.__queueboChart;
 
                     if (!chart) {
                         return;
@@ -509,7 +509,7 @@
         }"
         x-init="
             scheduleRender();
-            window.addEventListener('stackposts:highcharts-ready', () => scheduleRender());
+            window.addEventListener('queuebo:highcharts-ready', () => scheduleRender());
             window.addEventListener('theme-mode-changed', () => scheduleRender());
             document.addEventListener('livewire:navigated', () => scheduleRender());
             bindResize();

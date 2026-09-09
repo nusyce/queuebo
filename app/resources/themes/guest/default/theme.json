@@ -3,7 +3,7 @@
     "description": "Default guest theme with dark mode, language switching, marketing pages, and auth flow support.",
     "version": "1.0.0",
     "order": 20,
-    "author": "StackPosts",
+    "author": "Queuebo",
     "tags": ["landing", "saas", "auth", "dark", "light"],
     "supports": ["light-mode", "dark-mode", "boxed-layout", "theme-tokens"],
     "recommended_for": ["marketing sites", "public pricing pages", "guest auth flows"],

@@ -39,10 +39,10 @@ class AutomationWebhookDispatcher
                 $response = Http::timeout(30)
                     ->acceptJson()
                     ->withHeaders([
-                        'X-Stackposts-Event' => $event,
-                        'X-Stackposts-Request-Id' => $requestId,
-                        'X-Stackposts-Timestamp' => $timestamp,
-                        'X-Stackposts-Signature' => $signature,
+                        'X-Queuebo-Event' => $event,
+                        'X-Queuebo-Request-Id' => $requestId,
+                        'X-Queuebo-Timestamp' => $timestamp,
+                        'X-Queuebo-Signature' => $signature,
                     ])
                     ->post((string) $webhook->url, $payload);
 

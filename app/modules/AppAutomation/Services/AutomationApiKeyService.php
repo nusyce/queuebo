@@ -41,7 +41,7 @@ class AutomationApiKeyService
         $candidate = trim((string) $request->bearerToken());
 
         if ($candidate === '') {
-            $candidate = trim((string) $request->header('X-Stackposts-Key', ''));
+            $candidate = trim((string) $request->header('X-Queuebo-Key', ''));
         }
 
         if ($candidate === '') {

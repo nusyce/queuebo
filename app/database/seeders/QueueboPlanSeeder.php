@@ -7,7 +7,7 @@ use Modules\AdminPlans\Models\AdminPlan;
 use Modules\AdminPlans\Support\PlanPermissionSchema;
 use Modules\AppChannels\Support\ChannelCatalog;
 
-class StackPostsPlanSeeder extends Seeder
+class QueueboPlanSeeder extends Seeder
 {
     public function run(): void
     {
@@ -105,7 +105,7 @@ class StackPostsPlanSeeder extends Seeder
                 'free_plan' => false,
                 'trial_day' => 30,
                 'position' => 30,
-                'desc' => 'Full-year agency capacity for larger workspaces, more channels, and advanced StackPosts operations.',
+                'desc' => 'Full-year agency capacity for larger workspaces, more channels, and advanced Queuebo operations.',
                 'permissions' => $this->agencyPermissions(),
             ],
             [
@@ -119,7 +119,7 @@ class StackPostsPlanSeeder extends Seeder
                 'free_plan' => false,
                 'trial_day' => 30,
                 'position' => 10,
-                'desc' => 'One-time access for lean teams that want a durable StackPosts publishing setup.',
+                'desc' => 'One-time access for lean teams that want a durable Queuebo publishing setup.',
                 'permissions' => $this->starterPermissions(),
             ],
             [

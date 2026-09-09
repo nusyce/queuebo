@@ -1,6 +1,6 @@
 @php
     $options = app(\Modules\AdminSettings\Support\OptionStore::class);
-    $companyName = trim((string) $options->get('contact_company_name', config('app.name', 'Stackposts')));
+    $companyName = trim((string) $options->get('contact_company_name', config('app.name', 'Queuebo')));
     $companyWebsite = trim((string) $options->get('contact_company_website', 'https://yourcompany.com'));
     $contactEmail = trim((string) $options->get('contact_email', 'support@yourcompany.com'));
     $contactPhone = trim((string) $options->get('contact_phone_number', '+1 234 567 890'));

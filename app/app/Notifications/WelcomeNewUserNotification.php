@@ -18,7 +18,7 @@ class WelcomeNewUserNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Welcome to :app', ['app' => config('app.name', 'Stackposts')]))
+            ->subject(__('Welcome to :app', ['app' => config('app.name', 'Queuebo')]))
             ->greeting(__('Welcome, :name!', ['name' => $notifiable->name ?: $notifiable->username ?: __('there')]))
             ->line(__('Your account is ready and you can now start using the platform.'))
             ->action(__('Open dashboard'), route('portal.dashboard'))

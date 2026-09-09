@@ -10,7 +10,7 @@
         <div class="mx-auto max-w-4xl text-center">
             <span data-reveal class="inline-flex items-center rounded-full border border-emerald-400/14 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100/90">
                 <i class="fa-light fa-circle-check mr-2"></i>
-                {{ __('Pricing built for StackPosts growth') }}
+                {{ __('Pricing built for Queuebo growth') }}
             </span>
             <h1 data-reveal class="nova-stagger-1 mx-auto mt-6 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-white md:text-6xl">
                 {{ __('Pick the plan that matches your publishing volume and team size.') }}
@@ -56,7 +56,7 @@
                                                 <x-ui.badge variant="warning">{{ __(':days-day trial', ['days' => (int) $plan['trial_day']]) }}</x-ui.badge>
                                             @endif
                                         </div>
-                                        <p class="mt-6 text-lg font-medium text-white/66">{{ $plan['desc'] ?: __('A practical StackPosts plan for scheduling, automation, workspace control, and content operations.') }}</p>
+                                        <p class="mt-6 text-lg font-medium text-white/66">{{ $plan['desc'] ?: __('A practical Queuebo plan for scheduling, automation, workspace control, and content operations.') }}</p>
                                     </div>
                                     @if ($plan['featured'])
                                         <span class="inline-flex items-center rounded-full border border-emerald-300/14 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">

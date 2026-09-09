@@ -1,10 +1,12 @@
-# Stackposts v10 — self-hosted stack (monorepo).
+# Queuebo — self-hosted stack (monorepo).
 #
 #   cp .env.docker.example .env.docker      # then edit
 #   docker compose --env-file .env.docker up -d --build
 #
 # One image (built from ./app + ./docker) backs the web, queue and scheduler
 # services; they differ only by CONTAINER_ROLE.
+
+name: queuebo
 
 x-app: &app
   build:
@@ -14,7 +16,7 @@ x-app: &app
       PHP_VERSION: "8.3"
       # "true" to build from an ./app tree that has no vendor/
       RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
-  image: stackposts:10
+  image: queuebo:10
   restart: unless-stopped
   depends_on:
     mysql:
@@ -34,8 +36,8 @@ x-app: &app
 x-env: &infra-env
   DB_HOST: mysql
   DB_PORT: "3306"
-  DB_DATABASE: "${DB_DATABASE:-stackposts}"
-  DB_USERNAME: "${DB_USERNAME:-stackposts}"
+  DB_DATABASE: "${DB_DATABASE:-queuebo}"
+  DB_USERNAME: "${DB_USERNAME:-queuebo}"
   DB_PASSWORD: "${DB_PASSWORD:-secret}"
   WAIT_FOR_DB: "${WAIT_FOR_DB:-true}"
 
@@ -89,8 +91,8 @@ services:
     restart: unless-stopped
     command: --default-authentication-plugin=caching_sha2_password
     environment:
-      MYSQL_DATABASE: "${DB_DATABASE:-stackposts}"
-      MYSQL_USER: "${DB_USERNAME:-stackposts}"
+      MYSQL_DATABASE: "${DB_DATABASE:-queuebo}"
+      MYSQL_USER: "${DB_USERNAME:-queuebo}"
       MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-rootsecret}"
     volumes:

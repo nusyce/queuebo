@@ -9,7 +9,7 @@
     $options = app(\Modules\AdminSettings\Support\OptionStore::class);
     $siteTitle = trim((string) $options->get('website_title', ''));
     $siteDescription = trim((string) $options->get('website_description', ''));
-    $siteTitle = $siteTitle !== '' ? $siteTitle : config('site.title', config('app.name', 'Stackposts'));
+    $siteTitle = $siteTitle !== '' ? $siteTitle : config('site.title', config('app.name', 'Queuebo'));
     $siteDescription = $siteDescription !== '' ? $siteDescription : config('site.description', __('Run publishing, AI content, bulk posts, RSS schedules, media handling, and team workflows from one system.'));
     $signupEnabled = (string) $options->get('auth_signup_page_status', '1') === '1';
     $contactEmail = trim((string) $options->get('contact_email', ''));

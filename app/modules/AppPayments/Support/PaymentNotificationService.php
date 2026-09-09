@@ -80,7 +80,7 @@ class PaymentNotificationService
             'subscription_id' => (string) ($subscription?->subscription_id ?: $result?->subscriptionId ?: ($extra['subscription_id'] ?? '')),
             'status' => (string) ($result?->status ?: ($extra['status'] ?? '')),
             'message' => (string) ($result?->message ?: ($extra['message'] ?? __('No additional details were provided.'))),
-            'app_name' => (string) config('app.name', 'Stackposts'),
+            'app_name' => (string) config('app.name', 'Queuebo'),
         ], $extra);
     }
 

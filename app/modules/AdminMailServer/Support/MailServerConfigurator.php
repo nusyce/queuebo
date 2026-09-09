@@ -12,7 +12,7 @@ class MailServerConfigurator
         return [
             'mail_protocol' => (string) $options->get('mail_protocol', config('mail.default', 'log')),
             'mail_sender_email' => (string) $options->get('mail_sender_email', config('mail.from.address', 'hello@example.com')),
-            'mail_sender_name' => (string) $options->get('mail_sender_name', config('mail.from.name', config('app.name', 'Stackposts'))),
+            'mail_sender_name' => (string) $options->get('mail_sender_name', config('mail.from.name', config('app.name', 'Queuebo'))),
             'smtp_server' => (string) $options->get('smtp_server', config('mail.mailers.smtp.host', '')),
             'smtp_username' => (string) $options->get('smtp_username', config('mail.mailers.smtp.username', '')),
             'smtp_password' => (string) $options->get('smtp_password', config('mail.mailers.smtp.password', '')),
@@ -52,7 +52,7 @@ class MailServerConfigurator
             'mail.mailers.sendmail.transport' => 'sendmail',
             'mail.mailers.sendmail.path' => $sendmailPath !== '' ? $sendmailPath : '/usr/sbin/sendmail -bs -i',
             'mail.from.address' => trim((string) ($state['mail_sender_email'] ?? 'hello@example.com')),
-            'mail.from.name' => trim((string) ($state['mail_sender_name'] ?? config('app.name', 'Stackposts'))),
+            'mail.from.name' => trim((string) ($state['mail_sender_name'] ?? config('app.name', 'Queuebo'))),
         ]);
 
         app(MailManager::class)->forgetMailers();

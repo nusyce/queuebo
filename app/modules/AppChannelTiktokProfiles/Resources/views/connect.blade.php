@@ -31,7 +31,7 @@
                         :label="__('Username')"
                         :value="old('username', $account?->username)"
                         :error="$errors->first('username')"
-                        :placeholder="__('stackposts')"
+                        :placeholder="__('queuebo')"
                     />
 
                     <x-ui.input
@@ -47,7 +47,7 @@
                         :label="__('Profile URL')"
                         :value="old('profile_url', $account?->profile_url)"
                         :error="$errors->first('profile_url')"
-                        :placeholder="__('https://www.tiktok.com/@stackposts')"
+                        :placeholder="__('https://www.tiktok.com/@queuebo')"
                     />
 
                     <x-ui.input

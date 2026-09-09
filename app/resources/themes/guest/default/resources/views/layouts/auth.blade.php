@@ -46,8 +46,8 @@
                     <div class="w-full max-w-[34rem]">
                         <div class="mx-auto mb-8 flex w-full max-w-[34rem] items-start justify-between gap-4">
                             <a href="{{ route('home') }}" class="flex items-center gap-4 text-white/80 transition hover:text-white" wire:navigate>
-                                <img src="{{ $resolvedAuthLogoDark }}" alt="{{ config('app.name', 'StackPosts') }}" class="auth-brand-logo-dark block h-11 w-auto object-contain" onerror="this.onerror=null;this.src='{{ $fallbackAuthLogoDark }}';">
-                                <img src="{{ $resolvedAuthLogoLight }}" alt="{{ config('app.name', 'StackPosts') }}" class="auth-brand-logo-light block h-11 w-auto object-contain" onerror="this.onerror=null;this.src='{{ $fallbackAuthLogoLight }}';">
+                                <img src="{{ $resolvedAuthLogoDark }}" alt="{{ config('app.name', 'Queuebo') }}" class="auth-brand-logo-dark block h-11 w-auto object-contain" onerror="this.onerror=null;this.src='{{ $fallbackAuthLogoDark }}';">
+                                <img src="{{ $resolvedAuthLogoLight }}" alt="{{ config('app.name', 'Queuebo') }}" class="auth-brand-logo-light block h-11 w-auto object-contain" onerror="this.onerror=null;this.src='{{ $fallbackAuthLogoLight }}';">
                             </a>
 
                             <div class="flex items-center gap-3">

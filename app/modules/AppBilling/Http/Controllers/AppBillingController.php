@@ -140,7 +140,7 @@ class AppBillingController extends Controller
         abort_unless((int) $invoice->uid === (int) $request->user()?->id, 404);
 
         $user = $request->user();
-        $appName = (string) config('app.name', 'Stackposts');
+        $appName = (string) config('app.name', 'Queuebo');
         $createdAt = $invoice->createdAtFormatted('Y-m-d H:i') ?: 'N/A';
         $amount = ($invoice->currency ?: 'USD').' '.number_format((float) $invoice->amount, 2);
 

@@ -23,13 +23,13 @@
                 <img
                     x-show="appearanceResolved !== 'dark'"
                     src="{{ theme_asset('assets/img/logo-brand-dark.png', 'app') }}"
-                    alt="{{ config('app.name', 'Stackposts') }}"
+                    alt="{{ config('app.name', 'Queuebo') }}"
                     class="block h-8 w-auto max-w-none shrink-0"
                 >
                 <img
                     x-show="appearanceResolved === 'dark'"
                     src="{{ theme_asset('assets/img/logo-brand-light.png', 'app') }}"
-                    alt="{{ config('app.name', 'Stackposts') }}"
+                    alt="{{ config('app.name', 'Queuebo') }}"
                     class="block h-8 w-auto max-w-none shrink-0"
                 >
             </div>

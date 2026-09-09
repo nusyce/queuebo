@@ -1,9 +1,9 @@
 {
     "name": "App Default",
-    "description": "Default backend theme inspired by the old StackPosts app area.",
+    "description": "Default backend theme inspired by the old Queuebo app area.",
     "version": "1.0.0",
     "order": 10,
-    "author": "StackPosts",
+    "author": "Queuebo",
     "tags": ["dashboard", "admin", "operations", "control-panel"],
     "supports": ["light-mode", "dark-mode", "sidebar-nav", "theme-tokens"],
     "recommended_for": ["admin dashboards", "reporting panels", "operations tools"],

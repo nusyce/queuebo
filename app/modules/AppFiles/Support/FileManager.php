@@ -174,7 +174,7 @@ class FileManager
         }
 
         if ($appName === '') {
-            $appName = trim((string) config('app.name', 'Stackposts'));
+            $appName = trim((string) config('app.name', 'Queuebo'));
         }
 
         return [

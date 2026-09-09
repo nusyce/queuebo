@@ -45,7 +45,7 @@
                 :description="__('Use a sender identity that matches your verified domain to reduce spoofing and deliverability issues.')"
                 body-class="grid gap-5 p-6 md:grid-cols-2"
             >
-                <x-ui.input wire:model="mail_sender_name" type="text" :label="__('Sender Name')" :error="$errors->first('mail_sender_name')" placeholder="{{ __('Stackposts Notifications') }}" />
+                <x-ui.input wire:model="mail_sender_name" type="text" :label="__('Sender Name')" :error="$errors->first('mail_sender_name')" placeholder="{{ __('Queuebo Notifications') }}" />
                 <x-ui.input wire:model="mail_sender_email" type="email" :label="__('Sender Email')" :error="$errors->first('mail_sender_email')" placeholder="no-reply@example.com" />
             </x-theme.section-card>
 

@@ -54,7 +54,7 @@ class General extends Component
 
     public function mount(): void
     {
-        $this->website_title = $this->optionOrDefault('website_title', config('site.title', config('app.name', 'Stackposts')));
+        $this->website_title = $this->optionOrDefault('website_title', config('site.title', config('app.name', 'Queuebo')));
         $this->website_description = $this->optionOrDefault('website_description', config('site.description', ''));
         $this->website_keyword = $this->optionOrDefault('website_keyword', config('site.keywords', ''));
         $this->website_favicon = (string) $this->options->get('website_favicon', 'public/img/favicon.png');

@@ -16,7 +16,7 @@ Route::middleware(['web', 'auth', 'verified'])
 
             $checkoutOptions = array_filter([
                 'key' => $keyId,
-                'name' => (string) $request->query('name', config('app.name', 'Stackposts')),
+                'name' => (string) $request->query('name', config('app.name', 'Queuebo')),
                 'description' => (string) $request->query('description', __('Secure checkout')),
                 'callback_url' => (string) $request->query('callback_url', ''),
                 'redirect' => true,

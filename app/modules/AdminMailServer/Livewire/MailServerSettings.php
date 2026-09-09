@@ -86,13 +86,13 @@ class MailServerSettings extends Component
         try {
             Mail::raw(
                 __('This is a test email sent from the :app mail server configuration on :date.', [
-                    'app' => config('app.name', 'Stackposts'),
+                    'app' => config('app.name', 'Queuebo'),
                     'date' => now()->format('Y-m-d H:i:s'),
                 ]),
                 function ($message) use ($validated): void {
                     $message
                         ->to($validated['test_email'])
-                        ->subject(__('Test email from :app', ['app' => config('app.name', 'Stackposts')]));
+                        ->subject(__('Test email from :app', ['app' => config('app.name', 'Queuebo')]));
                 }
             );
 

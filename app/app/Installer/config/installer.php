@@ -26,7 +26,7 @@ return [
     'final_queue_connection' => env('INSTALLER_FINAL_QUEUE_CONNECTION', 'database'),
     'admin_plan_slug' => env('INSTALLER_ADMIN_PLAN_SLUG', 'agency-lifetime'),
     'default_seeders' => [
-        \Database\Seeders\StackPostsPlanSeeder::class,
+        \Database\Seeders\QueueboPlanSeeder::class,
         \Database\Seeders\AITemplateCategorySeeder::class,
         \Database\Seeders\AITemplateSeeder::class,
     ],

@@ -1,12 +1,12 @@
-# Stackposts — self-hosted monorepo
+# Queuebo — self-hosted monorepo
 
-Docker deployment for **Stackposts v10** (AI social-media management platform,
-CodeCanyon item `21747459`). One repository holds the containerisation and,
+Docker deployment for **Queuebo** (AI social-media management platform, built on
+Stackposts v10, CodeCanyon item `21747459`). One repo holds the containerisation and,
 under `app/`, your **licensed** copy of the application.
 
 ```
 .
-├── app/                    ← Stackposts source, vendor/ + build/ included (docs/CLEANUP.md)
+├── app/                    ← application source (Stackposts base, rebranded — docs/REBRAND.md)
 ├── docker/
 │   ├── Dockerfile          php 8.3-fpm + nginx + supervisor, one image
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
@@ -17,14 +17,17 @@ under `app/`, your **licensed** copy of the application.
 ├── .github/workflows/ci.yml
 └── docs/
     ├── ANALYSE-CODE.md     code / stack analysis
+    ├── CLEANUP.md          what was trimmed from the stock package
+    ├── REBRAND.md          Stackposts → Queuebo changes
     └── DEPLOYMENT.md       full deployment guide
 ```
 
 ## Licensing — read first
 
-Stackposts is sold under the **Envato commercial licence**. Keep this
+The Stackposts base is sold under the **Envato commercial licence**. Keep this
 repository **private**. `app/` holds the application source (see
-`docs/CLEANUP.md` for what was changed vs. the stock package).
+`docs/CLEANUP.md` and `docs/REBRAND.md` for what was changed vs. the stock
+package).
 
 ## Quick start
 
@@ -40,7 +43,7 @@ docker compose --env-file .env.docker up -d --build
 open http://localhost:8080/installer
 ```
 
-In the wizard use DB host `mysql`, port `3306`, database/user `stackposts`,
+In the wizard use DB host `mysql`, port `3306`, database/user `queuebo`,
 password = `DB_PASSWORD`, and your Envato **purchase code** (verified against
 `stackposts.com`, so the host needs outbound HTTPS).
 
