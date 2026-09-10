@@ -12,7 +12,7 @@ under `app/`, your **licensed** copy of the application.
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
 │   ├── nginx.conf php.ini opcache.ini supervisord.conf
 ├── docker-compose.yml      app + queue + scheduler + mysql + redis
-├── docker-compose.dokploy.yml   same stack, tuned for Dokploy (Traefik, env-injected)
+├── docker-compose.dokploy.yml   app + queue + scheduler for Dokploy (Traefik, env-injected; MySQL/Redis are native Dokploy DBs)
 ├── .env.docker.example
 ├── .env.dokploy.example
 ├── Makefile
@@ -79,5 +79,6 @@ Persistent volumes: `mysql`, `redis`, `storage` (the app's `storage/`).
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the long form, or
 [`docs/DOKPLOY.md`](docs/DOKPLOY.md) to deploy on **Dokploy** — one Compose
-service, Traefik-terminated TLS, all config from the Environment tab
+service, Traefik-terminated TLS, all config from the Environment tab, MySQL
+and Redis as Dokploy native Database services
 (`docker-compose.dokploy.yml` + `.env.dokploy.example`).

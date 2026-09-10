@@ -1,9 +1,20 @@
 # Queuebo on Dokploy
 
-Deploy the full stack (`app` + `queue` + `scheduler` + `mysql` + `redis`)
-as a single **Compose** service in [Dokploy](https://dokploy.com). Dokploy's
-bundled Traefik handles the domain and TLS; everything else runs from
+Deploy the app stack (`app` + `queue` + `scheduler`) as a single **Compose**
+service in [Dokploy](https://dokploy.com). Dokploy's bundled Traefik handles
+the domain and TLS; everything else runs from
 [`docker-compose.dokploy.yml`](../docker-compose.dokploy.yml).
+
+**MySQL and Redis are not part of this stack.** They're expected to be
+Dokploy **native _Database_ services** (Create Service → Database), which
+Dokploy manages — credentials, storage, versions, backups. Create one MySQL
+and one Redis (or reuse existing ones), then point `DB_HOST` / `REDIS_HOST`
+from the Environment tab at the **Internal Host** shown in each database's
+*Internal Connection* section. The `app` / `queue` / `scheduler` containers
+reach them over the shared `dokploy-network`.
+
+See [`Nusyce-Repo/dokploy`](https://github.com/Nusyce-Repo/dokploy) for the
+cluster-side setup (native DBs, pgAdmin/phpMyAdmin, Vaultwarden, OpenBao).
 
 ---
 
@@ -36,12 +47,25 @@ Open the **Environment** tab and paste
 |---------------------|-------------------------------------------------------------|
 | `APP_DOMAIN`        | bare host, no scheme — `queuebo.example.com`. `APP_URL` is derived as `https://$APP_DOMAIN`. |
 | `APP_KEY`           | `php artisan key:generate --show` (or `docker run --rm queuebo:dokploy php artisan key:generate --show` after the first build). Keep it stable. |
-| `DB_PASSWORD`       | app database user password.                                  |
-| `DB_ROOT_PASSWORD`  | MySQL root password (used by the healthcheck).               |
+| `DB_HOST`           | **Internal Host** of your Dokploy native MySQL (from its *Internal Connection* section). `DB_PORT` defaults to `3306`. |
+| `DB_DATABASE` / `DB_USERNAME` | dedicated db + user — create them once via Dokploy → MySQL → *Execute SQL* (see below). Default `queuebo` / `queuebo`. |
+| `DB_PASSWORD`       | that user's password.                                        |
+| `REDIS_HOST`        | **Internal Host** of your Dokploy native Redis. `REDIS_PORT` defaults to `6379`; set `REDIS_PASSWORD` from its page (or leave `null`). |
 | `ADMIN_EMAIL`       | first admin account, created on first boot.                  |
 
 Leave `ADMIN_PASSWORD` blank to have a strong one generated and printed to
 the `app` container log.
+
+Create the database and user once (Dokploy → your MySQL → **Execute SQL**):
+
+```sql
+CREATE DATABASE queuebo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'queuebo'@'%' IDENTIFIED BY 'a-strong-password';
+GRANT ALL PRIVILEGES ON queuebo.* TO 'queuebo'@'%';
+```
+
+Redis needs no setup — pick an unused database number if you set
+`QUEUE_CONNECTION=redis` / `CACHE_STORE=redis` and want isolation.
 
 ## 3. Domain
 
@@ -62,7 +86,7 @@ domain in the UI you can delete the `labels:` block on the `app` service.
 Hit **Deploy**. First boot sequence:
 
 1. image builds from `docker/Dockerfile` (PHP 8.3 + nginx + supervisor);
-2. `mysql` comes up, healthcheck passes;
+2. `app` waits for the native MySQL to accept connections (`WAIT_FOR_DB`);
 3. `app` runs `php artisan queuebo:install` — migrations, seeders (plans, AI
    templates), the admin user — then flips `APP_INSTALLED=true`. Idempotent:
    later deploys skip it;
@@ -86,26 +110,25 @@ php artisan migrate --force
 php artisan tinker
 ```
 
-**Persistence** — named volumes managed by Dokploy, kept across redeploys:
+**Persistence** — one named volume managed by Dokploy, kept across redeploys:
 
 | Volume    | Contents                                          |
 |-----------|--------------------------------------------------|
-| `mysql`   | database                                          |
-| `redis`   | AOF file                                          |
 | `storage` | `storage/` — uploads, logs, sessions, file cache |
 
-Back these up with Dokploy's **Backups** (point it at the `mysql` service)
-or a scheduled `mysqldump` from the console. To use Dokploy-managed volume
-bind mounts instead of named volumes, add them under the service's
-**Volumes** / **Advanced → Mounts** and drop the matching `volumes:` entry.
+The database and Redis are separate native services — back them up with
+Dokploy's **native Database Backups** (per DB: S3 target + cron schedule +
+restore) on each. To use a Dokploy-managed volume bind mount for `storage`
+instead of the named volume, add it under the service's **Volumes** /
+**Advanced → Mounts** and drop the matching `volumes:` entry.
 
 **Config changes** — `OPTIMIZE=true` caches config/views and
 `opcache.validate_timestamps=0`, so any env or code change needs a
 **Redeploy**, not just a restart.
 
 **Redis-backed queue** — set `QUEUE_CONNECTION=redis` (and optionally
-`CACHE_STORE=redis`, `SESSION_DRIVER=redis`) in the Environment tab; the
-`redis` service is already running.
+`CACHE_STORE=redis`, `SESSION_DRIVER=redis`) in the Environment tab; it uses
+the native Redis at `REDIS_HOST`.
 
 **Auto-deploy on push** — enable the GitHub/GitLab webhook in the service's
 **Deployments** tab.
@@ -120,5 +143,6 @@ bind mounts instead of named volumes, add them under the service's
 | Cert not issued | DNS resolves to this server; ports 80/443 open; Traefik logs for the ACME challenge. |
 | Redirect loop / mixed content | `APP_URL` is `https://…` and `SESSION_SECURE_COOKIE=true`. The entrypoint pins `HTTPS on` for FastCGI from `APP_URL`. |
 | `queue` / `scheduler` stuck "waiting for schema" | the `app` install step failed — read its log; fix, then Redeploy. |
+| `app` stuck "waiting for DB" | `DB_HOST` is the native MySQL's **Internal Host** (not `localhost`/`mysql`)? that DB deployed and on `dokploy-network`? `DB_USERNAME`/`DB_PASSWORD` valid and `DB_DATABASE` created? |
 | Login session drops after redeploy | `APP_KEY` must be a fixed value in the Environment tab, not regenerated per build. |
 | Purchase-code prompt in installer | `INSTALLER_PURCHASE_CODE_REQUIRED=false` (headless `AUTO_INSTALL` needs no code). |

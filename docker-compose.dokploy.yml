@@ -4,7 +4,7 @@
 #     Provider ......... this Git repository
 #     Compose Path ..... ./docker-compose.dokploy.yml
 #   Paste .env.dokploy.example into the Environment tab, set APP_DOMAIN,
-#   APP_KEY, DB_PASSWORD, DB_ROOT_PASSWORD, then Deploy.
+#   APP_KEY, DB_HOST, DB_PASSWORD, REDIS_HOST, then Deploy.
 #
 # How this differs from docker-compose.yml (local/dev):
 #   * no published host ports — Dokploy's bundled Traefik reaches the app
@@ -12,7 +12,11 @@
 #   * no ./.env.docker bind mount — every value is injected from the Dokploy
 #     Environment tab and passed through the `environment:` maps below
 #   * Traefik labels on the app service do TLS termination + routing
-#   * mysql / redis are internal only (no forwarded ports)
+#   * NO bundled mysql / redis — MySQL and Redis are Dokploy *native
+#     Database* services (created in the UI, which manages their creds,
+#     storage and backups). Set DB_HOST / REDIS_HOST in the Environment
+#     tab to the "Internal Host" Dokploy shows for each; the app / queue /
+#     scheduler containers reach them over the shared "dokploy-network".
 #
 # Laravel reads real environment variables with precedence over the .env
 # file (Dotenv immutable mode), so the container's seeded .env only supplies
@@ -29,11 +33,9 @@ x-app: &app
       RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
   image: queuebo:dokploy
   restart: unless-stopped
-  depends_on:
-    mysql:
-      condition: service_healthy
-    redis:
-      condition: service_started
+  networks:
+    - default
+    - dokploy-network
   volumes:
     - storage:/var/www/html/storage
 
@@ -51,17 +53,17 @@ x-app-env: &app-env
   LOG_CHANNEL: "${LOG_CHANNEL:-stack}"
   LOG_STACK: "${LOG_STACK:-single}"
   LOG_LEVEL: "${LOG_LEVEL:-error}"
-  # --- database (compose service "mysql") ---
+  # --- database (Dokploy native MySQL — "Internal Host" from its page) ---
   DB_CONNECTION: mysql
-  DB_HOST: mysql
-  DB_PORT: "3306"
+  DB_HOST: "${DB_HOST:?set DB_HOST in the Dokploy Environment tab — the Internal Host of your native MySQL}"
+  DB_PORT: "${DB_PORT:-3306}"
   DB_DATABASE: "${DB_DATABASE:-queuebo}"
   DB_USERNAME: "${DB_USERNAME:-queuebo}"
   DB_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in the Dokploy Environment tab}"
-  # --- redis (compose service "redis") ---
+  # --- redis (Dokploy native Redis — "Internal Host" from its page) ---
   REDIS_CLIENT: phpredis
-  REDIS_HOST: redis
-  REDIS_PORT: "6379"
+  REDIS_HOST: "${REDIS_HOST:?set REDIS_HOST in the Dokploy Environment tab — the Internal Host of your native Redis}"
+  REDIS_PORT: "${REDIS_PORT:-6379}"
   REDIS_PASSWORD: "${REDIS_PASSWORD:-null}"
   # --- queue / cache / session ---
   QUEUE_CONNECTION: "${QUEUE_CONNECTION:-database}"
@@ -106,9 +108,6 @@ services:
     environment:
       <<: *app-env
       CONTAINER_ROLE: app
-    networks:
-      - default
-      - dokploy-network
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost/up"]
       interval: 30s
@@ -154,35 +153,9 @@ services:
     depends_on:
       - app
 
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    command: --default-authentication-plugin=caching_sha2_password
-    environment:
-      MYSQL_DATABASE: "${DB_DATABASE:-queuebo}"
-      MYSQL_USER: "${DB_USERNAME:-queuebo}"
-      MYSQL_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in the Dokploy Environment tab}"
-      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in the Dokploy Environment tab}"
-    volumes:
-      - mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis:/data
-
 networks:
   dokploy-network:
     external: true
 
 volumes:
   storage:
-  mysql:
-  redis:
