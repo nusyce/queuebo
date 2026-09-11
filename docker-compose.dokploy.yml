@@ -74,6 +74,13 @@ x-app-env: &app-env
   SESSION_SECURE_COOKIE: "${SESSION_SECURE_COOKIE:-true}"
   SESSION_COOKIE: "${SESSION_COOKIE:-queuebo_session}"
   BROADCAST_CONNECTION: "${BROADCAST_CONNECTION:-log}"
+  # "cache" (backed by CACHE_STORE, shared across containers) so `php artisan
+  # down` on one replica is honoured by all of them — "file" (Laravel's own
+  # default) is per-container and won't propagate if "app" is ever scaled.
+  APP_MAINTENANCE_DRIVER: "${APP_MAINTENANCE_DRIVER:-cache}"
+  # "local" only works with exactly one "app" replica (uploads land on that
+  # container's disk alone — invisible to other replicas and to queue/
+  # scheduler). Set to "s3" (+ the AWS_* vars below) before scaling "app".
   FILESYSTEM_DISK: "${FILESYSTEM_DISK:-local}"
   # --- mail ---
   MAIL_MAILER: "${MAIL_MAILER:-log}"
