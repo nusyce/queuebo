@@ -2,6 +2,7 @@
 
 namespace App\Installer;
 
+use App\Installer\Console\InstallHeadlessCommand;
 use Illuminate\Support\ServiceProvider;
 
 class InstallerServiceProvider extends ServiceProvider
@@ -15,5 +16,11 @@ class InstallerServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/routes/web.php');
         $this->loadViewsFrom(__DIR__.'/resources/views', 'installer');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallHeadlessCommand::class,
+            ]);
+        }
     }
 }
