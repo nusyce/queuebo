@@ -68,6 +68,43 @@ class InstallerService
         }
     }
 
+    /**
+     * Provision the application against an already-configured database, without
+     * the web wizard: no purchase-code verification and no DB credential
+     * rewrite (the environment / .env is treated as the source of truth).
+     *
+     * Safe to re-run — every step is idempotent.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function installHeadless(array $data): User
+    {
+        if (! empty($data['db_host'])) {
+            $this->configureRuntimeDatabase($data);
+        }
+
+        Artisan::call('migrate', [
+            '--force' => true,
+            '--no-interaction' => true,
+        ]);
+        $this->seedDefaults();
+
+        $user = $this->createAdministrator($data);
+        $this->assignAdministratorPlan($user);
+        $this->storeOptions($data, null);
+
+        if (File::exists(base_path('.env'))) {
+            $this->envFileManager->write([
+                'APP_INSTALLED' => 'true',
+                'SITE_TITLE' => (string) $data['website_title'],
+                'SITE_DESCRIPTION' => (string) ($data['website_description'] ?? ''),
+                'SITE_KEYWORDS' => (string) ($data['website_keywords'] ?? ''),
+            ]);
+        }
+
+        return $user;
+    }
+
     protected function verifyPurchaseCode(array $data, Request $request): ?array
     {
         $required = (bool) config('installer.purchase_code_required', true);
