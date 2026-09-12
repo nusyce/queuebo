@@ -83,6 +83,7 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/stackposts.conf
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint \
     && echo '# overwritten at boot from APP_URL' > /etc/nginx/app_host.conf \
+    && mkdir -p /etc/supervisor/extra.d \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
 

@@ -12,7 +12,8 @@ under `app/`, your **licensed** copy of the application.
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
 │   ├── nginx.conf php.ini opcache.ini supervisord.conf
 ├── docker-compose.yml      app + queue + scheduler + mysql + redis
-├── docker-compose.dokploy.yml   same stack, tuned for Dokploy (Traefik, env-injected)
+├── docker-compose.dev.yml       local dev overlay — bind-mounts ./app for live editing
+├── docker-compose.dokploy.yml   single container for Dokploy (Traefik, env-injected; MySQL/Redis are native Dokploy DBs)
 ├── .env.docker.example
 ├── .env.dokploy.example
 ├── Makefile
@@ -55,6 +56,30 @@ database/user `queuebo`, password = `DB_PASSWORD`. It also asks for an
 Envato **purchase code** (verified against `stackposts.com`, needs outbound
 HTTPS) unless `INSTALLER_PURCHASE_CODE_REQUIRED=false`.
 
+## Local development (live code)
+
+```bash
+make dev
+#    or: docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+#          --env-file .env.docker up -d --build
+```
+
+`docker-compose.dev.yml` bind-mounts `./app` over `/var/www/html`, so host
+edits are live — no image rebuild. opcache re-checks timestamps
+(`docker/opcache.dev.ini`) so the **app** container serves changes on the
+next request; `OPTIMIZE=false` keeps config/view caches off. `storage/` and
+`bootstrap/cache/` stay on named volumes so container permissions never
+clash with the host.
+
+The image still supplies `vendor/` and `public/build` (both kept in the
+repo). If your `./app` has no `vendor/`, run `make dev` with
+`RUN_COMPOSER_INSTALL=true` once.
+
+The **queue** and **scheduler** are long-lived PHP processes — after
+editing a job or command, `docker compose restart queue scheduler`.
+Run tooling in the container: `make sh`, `make migrate`,
+`docker compose exec app php artisan …`, `… composer …`.
+
 ## Services
 
 | Service     | Role via `CONTAINER_ROLE` | Process |
@@ -79,5 +104,6 @@ Persistent volumes: `mysql`, `redis`, `storage` (the app's `storage/`).
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the long form, or
 [`docs/DOKPLOY.md`](docs/DOKPLOY.md) to deploy on **Dokploy** — one Compose
-service, Traefik-terminated TLS, all config from the Environment tab
+service, Traefik-terminated TLS, all config from the Environment tab, MySQL
+and Redis as Dokploy native Database services
 (`docker-compose.dokploy.yml` + `.env.dokploy.example`).
