@@ -1,5 +1,6 @@
 ENV_FILE ?= .env.docker
 DC        = docker compose --env-file $(ENV_FILE)
+DC_DEV    = $(DC) -f docker-compose.yml -f docker-compose.dev.yml
 
 .DEFAULT_GOAL := help
 
@@ -21,6 +22,12 @@ build: ## Build the image
 up: ## Start the stack
 	$(DC) up -d --build
 
+dev: ## Start the stack with ./app bind-mounted for live code editing
+	$(DC_DEV) up -d --build
+
+dev-logs: ## Tail app/queue/scheduler logs (dev overlay)
+	$(DC_DEV) logs -f app queue scheduler
+
 down: ## Stop the stack (keep volumes)
 	$(DC) down
 
@@ -39,10 +46,13 @@ key: ## Generate APP_KEY inside the container
 migrate: ## Run migrations
 	$(DC) exec app php artisan migrate --force
 
+install: ## Headless install against the pre-configured DB (migrate + seed + admin)
+	$(DC) exec app php artisan queuebo:install
+
 about: ## artisan about
 	$(DC) exec app php artisan about
 
 backup: ## Dump the database to backup.sql
 	$(DC) exec -T mysql sh -c 'exec mysqldump -u$$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE' > backup.sql
 
-.PHONY: help init hooks build up down destroy logs sh key migrate about backup
+.PHONY: help init hooks build up dev dev-logs down destroy logs sh key migrate install about backup

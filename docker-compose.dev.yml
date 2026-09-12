@@ -1,0 +1,59 @@
+# Queuebo — local development overlay for docker-compose.yml.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+#     --env-file .env.docker up -d --build
+#   # or simply: make dev
+#
+# What it changes vs. the base stack:
+#   * bind-mounts ./app over /var/www/html so host edits are live — no
+#     image rebuild to see a code change (the image still supplies vendor/
+#     and public/build, which are kept in the repo);
+#   * opcache re-validates timestamps (docker/opcache.dev.ini), so PHP
+#     picks up edits on the next request;
+#   * OPTIMIZE=false — the entrypoint clears config/view/event caches
+#     instead of baking them;
+#   * storage/ and bootstrap/cache/ stay on named volumes so container
+#     uid/permissions never clash with the host (and stale host caches
+#     can't leak in).
+#
+# NOTE: the queue and scheduler are long-running PHP processes — they load
+# code once at boot, so after editing a job/command run
+#   docker compose restart queue scheduler
+# opcache revalidation only helps the web (app) container.
+
+name: queuebo
+
+services:
+  app:
+    build:
+      args:
+        # Flip to "true" if your host ./app has no vendor/ (the build then
+        # provisions one inside the image; the bind mount shadows it, and
+        # the entrypoint runs composer install into ./app on first boot).
+        RUN_COMPOSER_INSTALL: "${RUN_COMPOSER_INSTALL:-false}"
+    volumes:
+      - ./app:/var/www/html
+      - devcache:/var/www/html/bootstrap/cache
+      - ./docker/opcache.dev.ini:/usr/local/etc/php/conf.d/zzz-opcache-dev.ini:ro
+      # Prefer to watch logs / uploads straight from the host? Swap the
+      # named "storage" volume (from docker-compose.yml) for a bind mount:
+      # - ./app/storage:/var/www/html/storage
+    environment:
+      OPTIMIZE: "false"
+
+  queue:
+    volumes:
+      - ./app:/var/www/html
+      - devcache:/var/www/html/bootstrap/cache
+    environment:
+      OPTIMIZE: "false"
+
+  scheduler:
+    volumes:
+      - ./app:/var/www/html
+      - devcache:/var/www/html/bootstrap/cache
+    environment:
+      OPTIMIZE: "false"
+
+volumes:
+  devcache:

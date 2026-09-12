@@ -246,11 +246,6 @@ class ShopProductCatalogService
         $categoryName = $this->inferCategoryName($name, $product);
         $isCombo = $this->inferIsCombo($name, $product);
         $isMain = $this->inferIsMain($name, $product, $isCombo);
-        $isEnvato = $this->inferIsEnvato($product);
-        $licensePrices = $productId > 0 ? $this->resolveLicensePrices($productId, $product) : [
-            'regular' => (float) Arr::get($product, 'price', 0),
-            'extended' => (float) Arr::get($product, 'price_extended_license', 0),
-        ];
 
         return [
             'id' => $productId,
@@ -520,32 +515,7 @@ class ShopProductCatalogService
             || str_contains($normalizedName, 'customized package');
     }
 
-    protected function inferIsEnvato(array $product): bool
-    {
-        if (Arr::has($product, 'is_envato')) {
-            return (bool) Arr::get($product, 'is_envato');
-        }
-
-        foreach (['envato_url', 'source_url', 'product_url'] as $key) {
-            $url = trim((string) Arr::get($product, $key, ''));
-
-            if ($url === '') {
-                continue;
-            }
-
-            $host = Str::lower((string) parse_url($url, PHP_URL_HOST));
-
-            if (
-                str_contains($host, 'envato.com')
-                || str_contains($host, 'codecanyon.net')
-                || str_contains($host, 'themeforest.net')
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+ 
 
     protected function timestampToDateTime(mixed $value): ?string
     {

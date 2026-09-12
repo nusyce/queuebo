@@ -71,19 +71,48 @@ docker compose exec app php artisan key:generate --force
 In the web installer:
 
 * **Purchase code** — your Envato purchase code (verified against
-  `stackposts.com`; the server must have outbound HTTPS).
-* **Database** — host `mysql`, port `3306`, database `stackposts`, user
-  `stackposts`, password = `DB_PASSWORD` from `.env.docker`.
+  `stackposts.com`; the server must have outbound HTTPS). Set
+  `INSTALLER_PURCHASE_CODE_REQUIRED=false` to skip this check offline.
+* **Database** — host `mysql`, port `3306`, database `queuebo`, user
+  `queuebo`, password = `DB_PASSWORD` from `.env.docker`.
 * **Admin account** — your credentials.
 
 The wizard runs migrations and sets `APP_INSTALLED=true` inside the
 container's `.env`. To make that persistent across `docker compose down`,
 either bind-mount `.env` or bake the finished `.env` into `.env.docker`.
 
-### Already-installed database
+### Headless install against a pre-configured database
 
-Skip the wizard: set `RUN_MIGRATIONS=true` in `.env.docker` and point `DB_*`
-at your existing database.
+Skip the wizard entirely — the `DB_*` in `.env.docker` are the only DB
+config the app needs. In `.env.docker`:
+
+```
+AUTO_INSTALL=true
+INSTALLER_PURCHASE_CODE_REQUIRED=false
+ADMIN_NAME=Administrator
+ADMIN_EMAIL=admin@example.com
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=            # blank → generated and printed to the app log
+```
+
+On first boot the `app` container runs `php artisan queuebo:install`:
+`migrate --force`, the default seeders (plans, AI templates), the
+super-admin user, and it flips `APP_INSTALLED=true` in `.env`. The step is
+idempotent and skips itself once installed. Run it by hand any time with:
+
+```bash
+docker compose exec app php artisan queuebo:install
+#   --force to re-run, --admin-email=… --admin-password=… to override
+```
+
+If a generated password scrolled past, reset it with
+`docker compose exec app php artisan tinker` or re-run with `--force
+--admin-password=…`.
+
+### Already-migrated database (no seeding / admin)
+
+Set `RUN_MIGRATIONS=true` (and leave `AUTO_INSTALL=false`) in `.env.docker`
+and point `DB_*` at your existing database.
 
 ---
 

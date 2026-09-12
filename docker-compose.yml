@@ -47,8 +47,12 @@ services:
     environment:
       <<: *infra-env
       CONTAINER_ROLE: app
-      # Leave "false" for a first install — the web wizard at /installer runs
-      # the migrations. Set "true" when pointing at an installed database.
+      # "true" = provision the pre-configured DB on first boot with
+      # `artisan queuebo:install` (migrate + seed + admin user), no web
+      # wizard. Reads ADMIN_* / SITE_* / INSTALLER_* from the mounted .env.
+      AUTO_INSTALL: "${AUTO_INSTALL:-false}"
+      # Ignored when AUTO_INSTALL=true. Otherwise "false" defers schema
+      # creation to the /installer web wizard; "true" runs `migrate --force`.
       RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
       OPTIMIZE: "${OPTIMIZE:-false}"
     ports:
