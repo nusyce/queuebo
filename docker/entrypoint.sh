@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Stackposts container entrypoint.
-# Role is selected with CONTAINER_ROLE: app (default) | queue | scheduler.
+# Role is selected with CONTAINER_ROLE: app (default) | queue | scheduler | all.
+# "all" runs everything (nginx + php-fpm + queue worker + scheduler loop) in
+# this one container, via an extra supervisor program file this script
+# writes below — for single-container deployments (docker-compose.dokploy.yml).
+# Split deployments (docker-compose.yml: separate app/queue/scheduler
+# containers) keep using the three roles below unchanged.
 set -euo pipefail
 
 ROLE="${CONTAINER_ROLE:-app}"
@@ -65,8 +70,8 @@ if [ "$ROLE" = "queue" ] || [ "$ROLE" = "scheduler" ]; then
     fi
 fi
 
-# --- One-time app prep — only the app role does this ------------------
-if [ "$ROLE" = "app" ]; then
+# --- One-time app prep — the app role, and "all", do this ------------
+if [ "$ROLE" = "app" ] || [ "$ROLE" = "all" ]; then
     # Pin HTTP_HOST / scheme for FastCGI from APP_URL, so Laravel builds
     # correct absolute URLs even if a proxy rewrites the Host header.
     # Prefer an injected APP_URL (docker-compose environment / Dokploy) over
@@ -129,10 +134,44 @@ fi
 # Keep runtime dirs writable when storage/ is a fresh named volume.
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 
+# --- "all": add the queue worker + scheduler as extra supervisor programs -
+# supervisord.conf loads *.conf from this directory via [include]. Written
+# here (not baked into the image) so it only ever applies to CONTAINER_ROLE=all
+# — the split app/queue/scheduler containers never touch it.
+if [ "$ROLE" = "all" ]; then
+    log "adding queue worker + scheduler as supervisor programs"
+    mkdir -p /etc/supervisor/extra.d
+    cat > /etc/supervisor/extra.d/queue-scheduler.conf <<'CONF'
+[program:queue]
+command=php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=120
+directory=/var/www/html
+user=www-data
+autostart=true
+autorestart=true
+priority=20
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:scheduler]
+command=php artisan schedule:work
+directory=/var/www/html
+user=www-data
+autostart=true
+autorestart=true
+priority=20
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+CONF
+fi
+
 # --- Hand off to the role's process ----------------------------------
 case "$ROLE" in
-    app)
-        log "starting web (nginx + php-fpm)"
+    app|all)
+        log "starting web (nginx + php-fpm$([ "$ROLE" = "all" ] && echo ' + queue + scheduler'))"
         exec "$@"
         ;;
     queue)

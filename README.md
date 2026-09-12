@@ -12,7 +12,7 @@ under `app/`, your **licensed** copy of the application.
 │   ├── entrypoint.sh       role dispatch, db wait, migrate/cache
 │   ├── nginx.conf php.ini opcache.ini supervisord.conf
 ├── docker-compose.yml      app + queue + scheduler + mysql + redis
-├── docker-compose.dokploy.yml   app + queue + scheduler for Dokploy (Traefik, env-injected; MySQL/Redis are native Dokploy DBs)
+├── docker-compose.dokploy.yml   single container for Dokploy (Traefik, env-injected; MySQL/Redis are native Dokploy DBs)
 ├── .env.docker.example
 ├── .env.dokploy.example
 ├── Makefile

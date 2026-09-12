@@ -1,17 +1,25 @@
 # Queuebo on Dokploy
 
-Deploy the app stack (`app` + `queue` + `scheduler`) as a single **Compose**
-service in [Dokploy](https://dokploy.com). Dokploy's bundled Traefik handles
-the domain and TLS; everything else runs from
-[`docker-compose.dokploy.yml`](../docker-compose.dokploy.yml).
+Deploy Queuebo as a single **Compose** service with **one container**
+(`app`) in [Dokploy](https://dokploy.com) — nginx, php-fpm, the queue worker
+and the scheduler loop all run together under supervisord
+(`CONTAINER_ROLE=all`; see `docker/entrypoint.sh` / `docker/supervisord.conf`).
+Dokploy's bundled Traefik handles the domain and TLS; everything else runs
+from [`docker-compose.dokploy.yml`](../docker-compose.dokploy.yml).
+
+Simpler to operate this way — one container to watch, one healthcheck, one
+thing to redeploy — at the cost of coupling their lifecycles: the queue
+worker and scheduler restart/redeploy together with the web process and
+can't be scaled independently. Need that separation? Split them back into
+their own services, the way `docker-compose.yml` (local) still does.
 
 **MySQL and Redis are not part of this stack.** They're expected to be
 Dokploy **native _Database_ services** (Create Service → Database), which
 Dokploy manages — credentials, storage, versions, backups. Create one MySQL
 and one Redis (or reuse existing ones), then point `DB_HOST` / `REDIS_HOST`
 from the Environment tab at the **Internal Host** shown in each database's
-*Internal Connection* section. The `app` / `queue` / `scheduler` containers
-reach them over the shared `dokploy-network`.
+*Internal Connection* section. The `app` container reaches them over the
+shared `dokploy-network`.
 
 See [`Nusyce-Repo/dokploy`](https://github.com/Nusyce-Repo/dokploy) for the
 cluster-side setup (native DBs, pgAdmin/phpMyAdmin, Vaultwarden, OpenBao).
@@ -33,7 +41,7 @@ cluster-side setup (native DBs, pgAdmin/phpMyAdmin, Vaultwarden, OpenBao).
 ## 1. Create the service
 
 1. **Project → Create Service → Compose.**
-2. **Provider:** this Git repository + branch (`main`).
+2. **Provider:** this Git repository + branch (`master`).
 3. **Compose Path:** `./docker-compose.dokploy.yml`
 4. **Compose Type:** `docker-compose` (build support — the image is built
    from `docker/Dockerfile` on the server).
@@ -90,8 +98,10 @@ Hit **Deploy**. First boot sequence:
 3. `app` runs `php artisan queuebo:install` — migrations, seeders (plans, AI
    templates), the admin user — then flips `APP_INSTALLED=true`. Idempotent:
    later deploys skip it;
-4. `queue` and `scheduler` wait for the `migrations` table, then start
-   `queue:work` / `schedule:work`;
+4. supervisord starts nginx + php-fpm, then (`CONTAINER_ROLE=all`) adds the
+   queue worker and scheduler loop as two more supervised programs — the
+   schema already exists at this point (step 3 ran first, in the same
+   container), so there's no separate wait;
 5. Traefik issues the certificate and routes `https://$APP_DOMAIN` → `app:80`.
 
 Watch **Logs**; when `app` reports the healthcheck passing, open the domain
@@ -108,6 +118,7 @@ php artisan about
 php artisan queuebo:install --force        # re-run install
 php artisan migrate --force
 php artisan tinker
+supervisorctl -c /etc/supervisor/conf.d/stackposts.conf status   # nginx/php-fpm/queue/scheduler
 ```
 
 **Persistence** — one named volume managed by Dokploy, kept across redeploys:
@@ -142,7 +153,7 @@ the native Redis at `REDIS_HOST`.
 | 404 / 502 from Traefik | `app` on `dokploy-network`? healthcheck green? `APP_DOMAIN` matches the DNS record and the `Host()` rule? |
 | Cert not issued | DNS resolves to this server; ports 80/443 open; Traefik logs for the ACME challenge. |
 | Redirect loop / mixed content | `APP_URL` is `https://…` and `SESSION_SECURE_COOKIE=true`. The entrypoint pins `HTTPS on` for FastCGI from `APP_URL`. |
-| `queue` / `scheduler` stuck "waiting for schema" | the `app` install step failed — read its log; fix, then Redeploy. |
+| Scheduled tasks / queued jobs not running | `supervisorctl status` in the console — `queue`/`scheduler` should show `RUNNING`. If missing entirely, `CONTAINER_ROLE` isn't `all` (check the Environment tab); if `FATAL`/restarting, check the container log for the crash. |
 | `app` stuck "waiting for DB" | `DB_HOST` is the native MySQL's **Internal Host** (not `localhost`/`mysql`)? that DB deployed and on `dokploy-network`? `DB_USERNAME`/`DB_PASSWORD` valid and `DB_DATABASE` created? |
 | Login session drops after redeploy | `APP_KEY` must be a fixed value in the Environment tab, not regenerated per build. |
 | Purchase-code prompt in installer | `INSTALLER_PURCHASE_CODE_REQUIRED=false` (headless `AUTO_INSTALL` needs no code). |
