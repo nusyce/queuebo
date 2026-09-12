@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Warns (does not block) when app/, docker/, or docker-compose.dokploy.yml
+# have local changes that aren't committed. Dokploy builds the image from
+# git, not from your working tree — twice now a fix that worked locally
+# (app/app/Installer/Console/, docker/nginx.conf) sat uncommitted and
+# silently never reached the deployed image. See docs/DOKPLOY.md.
+#
+# Enabled via `git config core.hooksPath .githooks` — `make hooks` (or
+# `make init`, which now calls it) sets this up on a fresh clone.
+
+paths=(app docker docker-compose.dokploy.yml)
+
+dirty="$(git status --porcelain -- "${paths[@]}" 2>/dev/null)"
+
+if [ -n "$dirty" ]; then
+    echo ""
+    echo "⚠️  Uncommitted changes under app/, docker/, or docker-compose.dokploy.yml:"
+    echo "$dirty" | sed 's/^/    /'
+    echo ""
+    echo "    Dokploy builds from git, not from this working tree — anything"
+    echo "    listed above will NOT be in the image on the next deploy."
+    echo ""
+fi
+
+exit 0
