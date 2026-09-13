@@ -628,7 +628,7 @@ class ShopProductCatalogService
             Str::startsWith($normalizedPath, 'files/')
             || Str::startsWith($normalizedPath, 'avatars/')
         ) {
-            return 'storage/app/public/'.$normalizedPath;
+            return 'storage/'.$normalizedPath;
         }
 
         return $normalizedPath;

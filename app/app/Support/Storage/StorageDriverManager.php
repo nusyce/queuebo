@@ -92,7 +92,7 @@ class StorageDriverManager
 
             $basePath = trim($basePath, '/');
 
-            return '/'.($basePath !== '' ? $basePath.'/' : '').'storage/app/public/'.$normalizedPath;
+            return '/'.($basePath !== '' ? $basePath.'/' : '').'storage/'.$normalizedPath;
         }
 
         try {
